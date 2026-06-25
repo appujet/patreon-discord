@@ -2,7 +2,10 @@
   "name": "@appujet/patreon",
   "version": "1.0.0",
   "description": "Patreon API v2 wrapper with automatic token management. Fetch patron data without dealing with OAuth or JSON:API.",
-  "author": "appujet",
+  "author": {
+    "name": "appujet",
+    "url": "https://github.com/appujet"
+  },
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -42,5 +45,12 @@
   "devDependencies": {
     "@types/node": "^20.11.16",
     "typescript": "^5.3.3"
-  }
+  },
+  "contributors": [
+    {
+      "name": "miramallows",
+      "url": "https://github.com/miramallows",
+      "reason": "original author"
+    }
+  ]
 }

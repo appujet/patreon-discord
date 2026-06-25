@@ -1,4 +1,6 @@
-# patreon-discord
+# @appujet/patreon
+
+> Originally created by [miramallows](https://github.com/miramallows/patreon-discord). Forked and maintained by [appujet](https://github.com/appujet).
 
 Patreon API v2 wrapper for grabbing patron data without wrestling with JSON:API or OAuth token management.
 
