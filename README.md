@@ -1,73 +1,125 @@
 # patreon-discord
-a patreon api v2 wrapper that helps you grab your patrons' data easily without hassle.
 
-patreon's api documentation can be found [here](https://docs.patreon.com/). do not be confused with other sections, only the "APIv2" sections.
+Patreon API v2 wrapper for grabbing patron data without wrestling with JSON:API or OAuth token management.
 
-don't think anyone will use this, but the patreon integration is pretty messy and isn't made discord integrations. this package is ideal for you to easily fix discrepancies between roles and pledges, that may occur due to declined payments, or for you to add external perks. c:
+You hand it your client credentials and a refresh token — it handles access token fetching, expiry, and rotation internally. No manual token refreshing, no `campaignId` hunting.
 
+---
 
-### example usage
-```js
-const { Campaign } = require('patreon-discord')
+## Install
 
-const myCampaign = new Campaign({ 
-    patreonToken: process.env.patreon_token,
-    campaignId: process.env.campaign_id
-})
-
-myCampaign.fetchPatrons(['active_patron', 'declined_patron'])
-    .then(patrons => { 
-        // do something
-    })
-
-myCampaign.fetchPatron('abcd-149328432-adsfdanca')
-    .then(patron => { 
-        // do something
-    })
+```sh
+npm install patreon-discord
 ```
 
-### reference
-`Campaign` class
-- takes two mandatory parameters, `patreonToken` and `campaignId`
+---
 
-> your patreon token can be found at the [Developer Portal](https://www.patreon.com/portal/registration/register-clients), called "Creator Access Token".
+## Usage
 
+```ts
+import { Campaign } from 'patreon-discord'
 
-`Campaign.fetchPatrons(patronStatusFilter[]<optional>)` method
-- takes one optional argument in an array format. you can input filters to choose what statuses of patrons' you'd like to receive. accepts 4 different options: `active_patron`, `declined_patron`, `former_patron` and `null`. null is possible according to Patreon's documentation and in my experience - this is if the user has never even pledged.
-- returns an array of `patron` object.
+const campaign = new Campaign({
+    clientId:     process.env.PATREON_CLIENT_ID,
+    clientSecret: process.env.PATREON_CLIENT_SECRET,
+    refreshToken: process.env.PATREON_REFRESH_TOKEN,
+})
 
+// fetch all active patrons
+const patrons = await campaign.fetchPatrons(['active_patron'])
 
-`Campaign.fetchPatron(pledgeId)` method
-- inputs an id of a pledge
-- returns a `patron` object.
+// fetch a single patron by member ID
+const patron = await campaign.fetchPatron('abc123')
+```
 
+---
 
-`patron` object
+## Getting your credentials
 
-provides all of the Member attributes - for detailed information on what each of these are, go to [Patreon's documentation on "Member"](https://docs.patreon.com/#member).
-- `campaign_lifetime_support_cents` number
-- `campaign_entitled_amount_cents` number
-- `email` string
-- `full_name` string
-- `is_follower` boolean
-- `last_charge_date` string (in utc iso format)
-- `last_charge_status` string
-- `lifetime_support_cents` number
-- `next_charge_date` string (in utc iso format)
-- `note` string
-- `patron_status` string
-- `pledge_cadence` number
-- `pledge_relationship_start` string (in utc iso format)
-- `will_pay_amount_cents` integer
-  
-as well as some mandatory information:
-- `pledge_id` - this is the id of the pledge. this is also the ID you need to provide in `Campaign.fetchPatron(pledgeId)` if you want to fetch a specific patron.
-- `patron_id` - this is the user/creator ID. the profile of the user can always be found via `https://www.patreon.com/user/creators?u=PATRON_ID_HERE`
-- `discord_user_id` - can be null, if they have not linked their discord yet. this is the user id of their discord integration.
-- `currently_entitled_tier_id` this is the pledge's tier id. this allows you to figure out what tier the user is pledged to.
-  
+1. Go to the [Patreon Developer Portal](https://www.patreon.com/portal/registration/register-clients) and register a client
+2. Note your **Client ID** and **Client Secret**
+3. From the same page, grab the **Creator's Refresh Token** under "Token Information"
 
-- `social_connections` an object of their social connections. this is from the user scope from Patreon's docs.
+---
 
-### good luck on your integration :)
+## API
+
+### `new Campaign(options)`
+
+| Option | Type | Description |
+|---|---|---|
+| `clientId` | `string` | Your Patreon OAuth client ID |
+| `clientSecret` | `string` | Your Patreon OAuth client secret |
+| `refreshToken` | `string` | Creator refresh token from the developer portal |
+
+The `campaignId` is resolved automatically from the token — no need to find and hardcode it.
+
+---
+
+### `campaign.fetchPatrons(statusFilter?)`
+
+Returns all patrons, optionally filtered by status.
+
+```ts
+// all patrons
+await campaign.fetchPatrons()
+
+// only active
+await campaign.fetchPatrons(['active_patron'])
+
+// active + declined
+await campaign.fetchPatrons(['active_patron', 'declined_patron'])
+```
+
+**Status values:** `active_patron` · `declined_patron` · `former_patron`
+
+Returns `Patron[]`.
+
+---
+
+### `campaign.fetchPatron(memberId)`
+
+Fetch a single patron by their Patreon member ID.
+
+```ts
+const patron = await campaign.fetchPatron('abc123')
+```
+
+Returns `Patron`.
+
+---
+
+## Patron object
+
+| Field | Type | Notes |
+|---|---|---|
+| `patron_id` | `string` | Patreon user ID |
+| `pledge_id` | `string` | Member/pledge ID — use this in `fetchPatron()` |
+| `discord_user_id` | `string \| undefined` | `undefined` if they haven't linked Discord |
+| `currently_entitled_tier_id` | `string \| undefined` | The tier they're currently pledged to |
+| `patron_status` | `string` | `active_patron`, `declined_patron`, or `former_patron` |
+| `full_name` | `string` | |
+| `email` | `string` | |
+| `is_follower` | `boolean` | |
+| `lifetime_support_cents` | `number` | |
+| `currently_entitled_amount_cents` | `number` | |
+| `last_charge_date` | `string` | UTC ISO |
+| `last_charge_status` | `string` | |
+| `next_charge_date` | `string` | UTC ISO |
+| `pledge_relationship_start` | `string` | UTC ISO |
+| `will_pay_amount_cents` | `number` | |
+| `social_connections` | `SocialConnections \| undefined` | Discord, Twitch, YouTube, etc. |
+
+Full field descriptions in [Patreon's Member docs](https://docs.patreon.com/#member).
+
+---
+
+## Token management
+
+Access tokens are fetched and refreshed automatically:
+
+- On the first API call, an access token is obtained using your refresh token
+- It's re-fetched 5 minutes before expiry
+- Patreon rotates refresh tokens on each use — the new one is kept in memory automatically
+
+Nothing is written to disk.
