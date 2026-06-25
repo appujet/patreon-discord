@@ -1,29 +1,46 @@
 {
-  "name": "patreon-discord",
-  "author": "miramallows",
+  "name": "@appujet/patreon",
+  "version": "1.0.0",
+  "description": "Patreon API v2 wrapper with automatic token management. Fetch patron data without dealing with OAuth or JSON:API.",
+  "author": "appujet",
   "license": "MIT",
-  "version": "0.0.6",
-  "description": "a patreon api v2 wrapper that helps you grab your patrons' data easily without hassle.",
   "type": "module",
-  "module": "dist/index.js",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
-    "start": "node index.js",
     "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "patreon",
+    "discord",
+    "patron",
+    "patreon-api",
+    "patreon-v2"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/appujet/patreon-discord.git"
+  },
+  "bugs": {
+    "url": "https://github.com/appujet/patreon-discord/issues"
+  },
+  "homepage": "https://github.com/appujet/patreon-discord#readme",
+  "engines": {
+    "node": ">=18"
   },
   "devDependencies": {
     "@types/node": "^20.11.16",
     "typescript": "^5.3.3"
-  },
-  "dependencies": {
-    "node-fetch": "^3.3.2"
-  },
-  "engines": {
-    "node": ">=18.x"
-  },
-  "repository": {
-    "url": "https://github.com/miramallows/patreon-discord"
   }
 }
